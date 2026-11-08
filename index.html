@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" class="intro-pending">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/rove.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="Meet Rove. A lightweight Windows browser built with Rust. Your tabs in a sidebar, your browsing organized into spaces. Free and open-source." />
+    <title>Rove — Light by Design. Fast by Nature.</title>
+    <style>
+      html { scrollbar-gutter: stable; }
+      html.intro-pending, html.intro-pending body { overflow: hidden; overscroll-behavior: none; }
+      html.intro-pending body { position: fixed; inset: 0; margin: 0; touch-action: none; }
+      #boot-splash { position: fixed; inset: 0; display: grid; place-items: center; background: #f8f8f7; }
+      #boot-square { position: relative; width: clamp(56px, 12vmin, 128px); aspect-ratio: 1; overflow: hidden; background: #e0e0df; }
+      #boot-square::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 20%, #ffffffb3 50%, transparent 80%); transform: translateX(-140%); animation: boot-shimmer 0.7s ease-in-out infinite; }
+      @keyframes boot-shimmer { to { transform: translateX(140%); } }
+      @media (prefers-reduced-motion: reduce) { #boot-square::after { animation: none; } }
+    </style>
+  </head>
+  <body>
+    <div id="app"><div id="boot-splash" role="status" aria-label="Loading Rove"><span id="boot-square"></span></div></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
