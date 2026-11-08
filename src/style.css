@@ -30,6 +30,11 @@ h1, h2, p { margin: 0; }
   padding-bottom: 530px;
 }
 
+.page-fade-enter-active { transition: opacity 260ms cubic-bezier(.23, 1, .32, 1); }
+.page-fade-leave-active { transition: opacity 180ms cubic-bezier(.23, 1, .32, 1); pointer-events: none; }
+.page-fade-enter-from, .page-fade-leave-to { opacity: 0; }
+#hero-title:focus { outline: none; }
+
 .skip-link {
   position: absolute;
   z-index: 10;

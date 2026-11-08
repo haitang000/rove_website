@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { RiGithubFill, RiChromeFill } from '@remixicon/vue'
 import DownloadButton from './components/DownloadButton.vue'
+import DownloadPage from './components/DownloadPage.vue'
 import FeatureCard from './components/FeatureCard.vue'
 import LoadingIntro from './components/LoadingIntro.vue'
 import ScrollRevealText from './components/ScrollRevealText.vue'
@@ -17,8 +18,55 @@ import ctaBackground from '../cta_bg.png'
 const repositoryUrl = 'https://github.com/haitang000/RoveBrowser'
 const downloadUrl = `${repositoryUrl}/releases/latest`
 const introComplete = ref(false)
+const isDownloadPage = ref(window.location.hash === '#download')
+const pageTransitioning = ref(false)
+const homeHref = ref(`${window.location.pathname}${window.location.search}${isDownloadPage.value ? '' : window.location.hash}`)
+let homeScrollY = 0
+const smoothScrollEnabled = computed(() => introComplete.value && !isDownloadPage.value && !pageTransitioning.value)
 const { messages } = useI18n()
-useSmoothScroll(introComplete)
+useSmoothScroll(smoothScrollEnabled)
+
+watchEffect(() => {
+  const meta = isDownloadPage.value ? messages.value.downloadPage.meta : messages.value.meta
+  document.title = meta.title
+  document.querySelector('meta[name="description"]')?.setAttribute('content', meta.description)
+})
+
+function syncPage() {
+  const nextIsDownload = window.location.hash === '#download'
+  if (!nextIsDownload) homeHref.value = `${window.location.pathname}${window.location.search}${window.location.hash}`
+  if (nextIsDownload === isDownloadPage.value) return
+  if (!isDownloadPage.value) homeScrollY = window.scrollY
+  pageTransitioning.value = true
+  isDownloadPage.value = nextIsDownload
+}
+
+function navigate(event: MouseEvent) {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+  event.preventDefault()
+  const link = event.currentTarget as HTMLAnchorElement
+  window.history.pushState(null, '', link.href)
+  syncPage()
+}
+
+function preparePage() {
+  window.scrollTo({ top: isDownloadPage.value ? 0 : homeScrollY, behavior: 'instant' })
+}
+
+function finishPage() {
+  pageTransitioning.value = false
+  document.getElementById(isDownloadPage.value ? 'download-page-title' : 'hero-title')?.focus({ preventScroll: true })
+}
+
+onMounted(() => {
+  window.addEventListener('popstate', syncPage)
+  window.addEventListener('hashchange', syncPage)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', syncPage)
+  window.removeEventListener('hashchange', syncPage)
+})
 const introPhotos = Object.values(import.meta.glob('./assets/intro/*.jpg', {
   eager: true,
   query: '?url',
@@ -43,6 +91,9 @@ const features = computed(() => [
 
 <template>
   <LoadingIntro :images="introPhotos" :preload="[tabManagement, splitView, peek, banner, ctaBackground]" @complete="introComplete = true">
+  <Transition name="page-fade" mode="out-in" @enter="preparePage" @after-enter="finishPage">
+  <DownloadPage v-if="isDownloadPage" key="download" :download-url="downloadUrl" :repository-url="repositoryUrl" :home-href="homeHref" @home="navigate" />
+  <div v-else key="home">
   <a class="skip-link" href="#meet-rove">{{ messages.skipToContent }}</a>
 
   <main class="page-shell">
@@ -50,7 +101,7 @@ const features = computed(() => [
       <header class="hero-header">
         <div class="hero-copy">
           <img class="brand-mark" :src="roveLogo" alt="Rove" width="64" height="64" />
-          <h1 id="hero-title">
+          <h1 id="hero-title" tabindex="-1">
             <template v-for="(line, index) in messages.hero.title" :key="index">
               <br v-if="index" />{{ line }}
             </template>
@@ -59,7 +110,7 @@ const features = computed(() => [
         </div>
 
         <nav class="hero-actions" :aria-label="messages.hero.actionsLabel">
-          <DownloadButton :href="downloadUrl" />
+          <DownloadButton href="#download" @click="navigate" />
           <a class="button button-secondary" :href="repositoryUrl" target="_blank" rel="noopener noreferrer">
             <RiGithubFill aria-hidden="true" />
             <span>{{ messages.githubButton }}</span>
@@ -124,9 +175,11 @@ const features = computed(() => [
             <br v-if="index" class="desktop-break" />{{ index ? ' ' : '' }}{{ line }}
           </template>
         </p>
-        <DownloadButton :href="downloadUrl" />
+        <DownloadButton href="#download" @click="navigate" />
       </div>
     </section>
   </main>
+  </div>
+  </Transition>
   </LoadingIntro>
 </template>

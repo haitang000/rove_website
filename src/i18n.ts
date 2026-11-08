@@ -58,6 +58,20 @@ const en = {
     title: 'Go Further. Browse Lighter.',
     description: 'Experience a lighter, faster way to explore the web. Built with Rust, made for\nWindows, and free for everyone.',
   },
+  downloadPage: {
+    meta: {
+      title: 'Before downloading — Rove',
+      description: 'Before downloading Rove, learn about its early development stage, Windows 10 or later requirement, and WebView2 dependency.',
+    },
+    title: ['Before downloading,', 'there are a few things', 'you need to know'],
+    notices: [
+      "Rove is still in the early stages of development, and we don't recommend anyone use it as their primary browser.",
+      'Rove is only available for Windows 10 and later versions, and it relies on WebView2 to function properly.',
+    ],
+    confirmButton: 'I got it, downloading now',
+    actionsLabel: 'Download Rove or view the source code',
+    backHome: 'Back to the Rove homepage',
+  },
 }
 
 const translations = {
@@ -117,6 +131,20 @@ const translations = {
     download: {
       title: '探索更远，浏览更轻。',
       description: '以更轻盈、更迅捷的方式探索网络。基于 Rust 构建，专为 Windows 打造，向所有人免费开放。',
+    },
+    downloadPage: {
+      meta: {
+        title: '下载前须知 — Rove',
+        description: '下载 Rove 前，请了解其早期开发状态、Windows 10 及以上版本要求，以及 WebView2 运行依赖。',
+      },
+      title: ['下载之前，', '有几件事', '你需要了解'],
+      notices: [
+        'Rove 仍处于早期开发阶段，我们暂不建议将它作为主力浏览器使用。',
+        'Rove 仅支持 Windows 10 及以上版本，并依赖 WebView2 才能正常运行。',
+      ],
+      confirmButton: '我已了解，立即下载',
+      actionsLabel: '下载 Rove 或查看源代码',
+      backHome: '返回 Rove 首页',
     },
   },
 } satisfies Record<Locale, typeof en>

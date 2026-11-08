@@ -26,6 +26,8 @@ npm run build
 npm run preview
 ```
 
-下载按钮当前跳转至 RoveBrowser 的最新 GitHub Release，GitHub 按钮跳转至源码仓库；链接集中配置在 `src/App.vue`。没有提供安装包时，不使用虚构的下载地址。
+首页两处下载按钮会先淡出首页，再淡入 `#download` 下载须知页；此地址可直接打开或刷新，支持浏览器前进、后退，返回首页时恢复原来的滚动位置。点击须知页的 Rove 标志也可返回首页。系统开启减少动态效果时直接切换页面。须知文案和页面元数据复用原有语言判断逻辑，集中维护在 `src/i18n.ts`。
+
+下载须知页的确认按钮当前跳转至 RoveBrowser 的最新 GitHub Release，GitHub 按钮跳转至源码仓库；链接集中配置在 `src/App.vue`。没有提供安装包时，不使用虚构的下载地址。
 
 未登录状态访问该仓库和最新 Release 返回 404，可能需要仓库访问权限。正式上线前，可在 `src/App.vue` 中将 `downloadUrl` 替换为公开安装包或发布页地址。

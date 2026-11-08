@@ -6,12 +6,14 @@ const { messages } = useI18n()
 
 defineProps<{
   href: string
+  label?: string
+  external?: boolean
 }>()
 </script>
 
 <template>
-  <a class="button button-primary" :href="href" target="_blank" rel="noopener noreferrer">
+  <a class="button button-primary" :href="href" :target="external ? '_blank' : undefined" :rel="external ? 'noopener noreferrer' : undefined">
     <RiMicrosoftFill aria-hidden="true" />
-    <span>{{ messages.downloadButton }}</span>
+    <span>{{ label ?? messages.downloadButton }}</span>
   </a>
 </template>
