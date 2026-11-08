@@ -5,10 +5,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const props = defineProps<{ lines: string[]; enabled: boolean }>()
+const props = withDefaults(defineProps<{ lines: string[]; enabled: boolean; lineSeparator?: string }>(), {
+  lineSeparator: ' ',
+})
 const paragraph = ref<HTMLParagraphElement | null>(null)
 const wordsByLine = computed(() => props.lines.map((line) => line.split(' ')))
-const fullText = computed(() => props.lines.join(' '))
+const fullText = computed(() => props.lines.join(props.lineSeparator))
 let media: gsap.MatchMedia | undefined
 
 function setupReveal() {
@@ -60,7 +62,7 @@ onUnmounted(() => media?.revert())
     <span class="reveal-accessible">{{ fullText }}</span>
     <span aria-hidden="true">
       <template v-for="(words, lineIndex) in wordsByLine" :key="lineIndex">
-        <template v-if="lineIndex"><br class="desktop-break" />{{ ' ' }}</template>
+        <template v-if="lineIndex"><br class="desktop-break" />{{ lineSeparator }}</template>
         <template v-for="(word, wordIndex) in words" :key="wordIndex">
           {{ wordIndex ? ' ' : '' }}<span class="reveal-word"><span
             v-for="(character, characterIndex) in Array.from(word)"
@@ -75,6 +77,7 @@ onUnmounted(() => media?.revert())
 
 <style scoped>
 .reveal-word { white-space: nowrap; }
+.reveal-word:lang(zh) { white-space: normal; }
 .reveal-character { color: #c8c8c8; transition: color 90ms linear; }
 .reveal-character.is-read { color: #22262f; }
 .reveal-accessible {

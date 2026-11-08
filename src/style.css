@@ -8,6 +8,10 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root:lang(zh) {
+  font-family: 'Outfit Variable', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+}
+
 * { box-sizing: border-box; }
 html { scrollbar-gutter: stable; }
 html.intro-pending, html.intro-pending body { overflow: hidden; overscroll-behavior: none; }
@@ -199,6 +203,13 @@ a:focus-visible { outline: 3px solid #6955f6; outline-offset: 6px; }
   .download-copy p { margin-top: 16px; font-size: 20px; line-height: 1.4; }
   .download-copy .button { margin-top: 24px; }
 }
+
+.hero h1:lang(zh), .feature-copy h2:lang(zh), .performance h2:lang(zh), .download-copy h2:lang(zh) {
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.introduction p:lang(zh), .feature-copy p:lang(zh), .download-copy p:lang(zh) { line-height: 1.5; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }

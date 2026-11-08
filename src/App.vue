@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { RiGithubFill, RiChromeFill } from '@remixicon/vue'
 import DownloadButton from './components/DownloadButton.vue'
 import FeatureCard from './components/FeatureCard.vue'
 import LoadingIntro from './components/LoadingIntro.vue'
 import ScrollRevealText from './components/ScrollRevealText.vue'
 import { useSmoothScroll } from './composables/useSmoothScroll'
+import { useI18n } from './i18n'
 import roveLogo from '../rove.svg'
 import banner from '../banner.png'
 import tabManagement from '../tab_management.png'
@@ -16,59 +17,52 @@ import ctaBackground from '../cta_bg.png'
 const repositoryUrl = 'https://github.com/haitang000/RoveBrowser'
 const downloadUrl = `${repositoryUrl}/releases/latest`
 const introComplete = ref(false)
+const { messages } = useI18n()
 useSmoothScroll(introComplete)
-const introductionLines = [
-  'Your tabs in a sidebar, your browsing organized into',
-  'spaces. A lightweight, high-performance browser built',
-  'with Rust for Windows. Free and open-source, designed',
-  'to make browsing feel effortless.',
-]
 const introPhotos = Object.values(import.meta.glob('./assets/intro/*.jpg', {
   eager: true,
   query: '?url',
   import: 'default',
 })) as string[]
 
-const features = [
+const features = computed(() => [
   {
     image: tabManagement,
-    imageAlt: 'Rove tab overview, with all open tabs organized into Personal and Work spaces.',
-    title: ['Manage all your tabs', 'efficiently'],
-    description: 'Manage all your tabs in one place - incredibly convenient',
+    ...messages.value.features.tabs,
   },
   {
     image: splitView,
-    imageAlt: 'Two websites open side by side in Rove’s split view.',
-    title: ['Multitask,', 'effortlessly.'],
-    description: 'View two pages side by side. Compare, research, and get more done without switching tabs.',
+    ...messages.value.features.split,
   },
   {
     image: peek,
-    imageAlt: 'A YouTube video preview floating above the current page in Rove.',
-    title: ['A Glance Is', 'All You Need.'],
-    description: 'Preview links instantly without leaving your page.\nStay focused, browse seamlessly.',
+    ...messages.value.features.peek,
   },
-]
+])
 </script>
 
 <template>
   <LoadingIntro :images="introPhotos" :preload="[tabManagement, splitView, peek, banner, ctaBackground]" @complete="introComplete = true">
-  <a class="skip-link" href="#meet-rove">Skip to content</a>
+  <a class="skip-link" href="#meet-rove">{{ messages.skipToContent }}</a>
 
   <main class="page-shell">
     <section class="hero" aria-labelledby="hero-title">
       <header class="hero-header">
         <div class="hero-copy">
           <img class="brand-mark" :src="roveLogo" alt="Rove" width="64" height="64" />
-          <h1 id="hero-title">Light by Design.<br />Fast by Nature.</h1>
-          <p class="hero-description">A Windows browser built with Rust. Free and open-source</p>
+          <h1 id="hero-title">
+            <template v-for="(line, index) in messages.hero.title" :key="index">
+              <br v-if="index" />{{ line }}
+            </template>
+          </h1>
+          <p class="hero-description">{{ messages.hero.description }}</p>
         </div>
 
-        <nav class="hero-actions" aria-label="Get Rove">
+        <nav class="hero-actions" :aria-label="messages.hero.actionsLabel">
           <DownloadButton :href="downloadUrl" />
           <a class="button button-secondary" :href="repositoryUrl" target="_blank" rel="noopener noreferrer">
             <RiGithubFill aria-hidden="true" />
-            <span>View on GitHub</span>
+            <span>{{ messages.githubButton }}</span>
           </a>
         </nav>
       </header>
@@ -77,7 +71,7 @@ const features = [
         <img
           :src="banner"
           class="browser-preview"
-          alt="Rove browser with a clean vertical sidebar, browsing spaces, and the Notion homepage."
+          :alt="messages.hero.imageAlt"
           width="1440"
           height="852"
           fetchpriority="high"
@@ -86,19 +80,19 @@ const features = [
     </section>
 
     <section id="meet-rove" class="introduction" aria-labelledby="meet-title">
-      <h2 id="meet-title" class="eyebrow">Meet Rove</h2>
-      <ScrollRevealText :lines="introductionLines" :enabled="introComplete" />
+      <h2 id="meet-title" class="eyebrow">{{ messages.introduction.title }}</h2>
+      <ScrollRevealText :lines="messages.introduction.lines" :line-separator="messages.introduction.lineSeparator" :enabled="introComplete" />
     </section>
 
-    <section class="features" aria-label="A more effortless way to browse">
+    <section class="features" :aria-label="messages.featuresLabel">
       <FeatureCard v-for="feature in features" :key="feature.image" v-bind="feature" />
     </section>
 
     <section class="performance" aria-labelledby="performance-title">
-      <h2 id="performance-title">Incredible app size and speed</h2>
-      <p class="performance-description">Speedometer3.1 (The lower the better)</p>
+      <h2 id="performance-title">{{ messages.performance.title }}</h2>
+      <p class="performance-description">{{ messages.performance.description }}</p>
 
-      <div class="benchmark" role="img" aria-label="Performance comparison from the design: Rove 19.9, Chrome 23.0. Lower is better.">
+      <div class="benchmark" role="img" :aria-label="messages.performance.benchmarkLabel">
         <div class="benchmark-row">
           <div class="browser-name">
             <span class="browser-icon"><img :src="roveLogo" alt="" width="44" height="44" /></span>
@@ -124,8 +118,12 @@ const features = [
 
     <section class="download-banner" aria-labelledby="download-title">
       <div class="download-copy">
-        <h2 id="download-title">Go Further. Browse Lighter.</h2>
-        <p>Experience a lighter, faster way to explore the web. Built with Rust, made for<br class="desktop-break" /> Windows, and free for everyone.</p>
+        <h2 id="download-title">{{ messages.download.title }}</h2>
+        <p>
+          <template v-for="(line, index) in messages.download.description.split('\n')" :key="index">
+            <br v-if="index" class="desktop-break" />{{ index ? ' ' : '' }}{{ line }}
+          </template>
+        </p>
         <DownloadButton :href="downloadUrl" />
       </div>
     </section>

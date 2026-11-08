@@ -3,11 +3,13 @@ import { nextTick, onMounted, onUnmounted, ref, useId } from 'vue'
 import { gsap } from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
 import { preloadImages } from '../utils/preloadImages'
+import { useI18n } from '../i18n'
 
 gsap.registerPlugin(CustomEase)
 
 const props = defineProps<{ images: string[]; preload?: string[] }>()
 const emit = defineEmits<{ complete: [] }>()
+const { messages } = useI18n()
 
 const root = ref<HTMLElement | null>(null)
 const page = ref<HTMLElement | null>(null)
@@ -228,7 +230,7 @@ onUnmounted(() => {
         </filter>
       </defs>
     </svg>
-    <div v-if="active" class="intro-stage" role="status" aria-live="polite" aria-label="Loading Rove">
+    <div v-if="active" class="intro-stage" role="status" aria-live="polite" :aria-label="messages.loading.label">
       <div class="intro-stack">
       <span class="intro-placeholder" :class="{ 'is-loaded': phase !== 'loading' }" aria-hidden="true"></span>
       <div
@@ -243,8 +245,8 @@ onUnmounted(() => {
       </div>
       </div>
       <div v-if="loadError" class="intro-error">
-        <p>Some images couldn’t load.</p>
-        <button type="button" @click="startWhenReady">Try again</button>
+        <p>{{ messages.loading.error }}</p>
+        <button type="button" @click="startWhenReady">{{ messages.loading.retry }}</button>
       </div>
     </div>
 
