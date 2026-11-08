@@ -15,7 +15,7 @@ defineProps<{
       :alt="imageAlt"
       width="660"
       height="410"
-      loading="lazy"
+      loading="eager"
       decoding="async"
     />
     <div class="feature-copy">

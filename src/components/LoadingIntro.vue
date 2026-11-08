@@ -2,6 +2,7 @@
 import { nextTick, onMounted, onUnmounted, ref, useId } from 'vue'
 import { gsap } from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
+import { preloadImages } from '../utils/preloadImages'
 
 gsap.registerPlugin(CustomEase)
 
@@ -11,6 +12,7 @@ const emit = defineEmits<{ complete: [] }>()
 const root = ref<HTMLElement | null>(null)
 const page = ref<HTMLElement | null>(null)
 const active = ref(true)
+const loadError = ref(false)
 const phase = ref<'loading' | 'stacking' | 'image-exit' | 'page-enter' | 'complete'>('loading')
 const layers = ref<{ src: string; circle: boolean; growth: number }[]>([])
 const lensMap = ref('')
@@ -34,9 +36,10 @@ let context: gsap.Context | undefined
 let disposed = false
 let completed = false
 let restoreScroll: (() => void) | undefined
-let readinessTimeout: ReturnType<typeof setTimeout> | undefined
 let minimumTimeout: ReturnType<typeof setTimeout> | undefined
 let motionPreference: MediaQueryList | undefined
+let assetsReady = false
+let loadingAssets = false
 
 function lockScroll() {
   const preventScroll = (event: Event) => event.preventDefault()
@@ -99,7 +102,7 @@ function prepareLens() {
 }
 
 function handleMotionPreference() {
-  if (!motionPreference?.matches) return
+  if (!motionPreference?.matches || !assetsReady) return
   context?.revert()
   complete()
 }
@@ -111,28 +114,6 @@ function shuffledImages(sources: string[]) {
     ;[shuffled[index], shuffled[other]] = [shuffled[other]!, shuffled[index]!]
   }
   return shuffled
-}
-
-async function prepareImages() {
-  const available: string[] = []
-  const photoSources = new Set(props.images)
-  const preload = [...new Set([...props.images, ...(props.preload ?? [])])].map(async (src) => {
-    const image = new Image()
-    image.src = src
-    try {
-      await image.decode()
-      if (!disposed && photoSources.has(src)) available.push(src)
-    } catch {
-      // A missing image must never leave the intro or scroll lock stuck.
-    }
-  })
-
-  await Promise.race([
-    Promise.allSettled([...preload, document.fonts.ready]),
-    new Promise<void>((resolve) => { readinessTimeout = setTimeout(resolve, 7000) }),
-  ])
-  clearTimeout(readinessTimeout)
-  return available
 }
 
 function playIntro() {
@@ -190,38 +171,46 @@ function playIntro() {
   }, root.value)
 }
 
-onMounted(async () => {
-  lockScroll()
-  motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
-  motionPreference.addEventListener('change', handleMotionPreference)
-
-  if (motionPreference.matches) return complete()
-
+async function startWhenReady() {
+  if (loadingAssets || disposed || completed || !page.value) return
+  loadingAssets = true
+  loadError.value = false
   try {
-    prepareLens()
-    const [available] = await Promise.all([
-      prepareImages(),
+    await Promise.all([
+      preloadImages(page.value, [...props.images, ...(props.preload ?? [])]),
       new Promise<void>((resolve) => { minimumTimeout = setTimeout(resolve, 250) }),
     ])
     if (disposed || completed) return
-    if (!available.length) return complete()
+    assetsReady = true
+    if (motionPreference?.matches || !props.images.length) return complete()
 
-    const pool = shuffledImages(available)
+    const pool = shuffledImages([...new Set(props.images)])
     layers.value = Array.from({ length: rounds * 2 }, (_, index) => ({
       src: pool[index % pool.length]!,
       circle: index % 2 === 1,
       growth: sizeMultiplier ** (index + 1),
     }))
     await nextTick()
+    // The six visible copies must also be decoded before their first frame.
+    await Promise.all([...root.value!.querySelectorAll<HTMLImageElement>('.intro-layer img')].map((image) => image.decode()))
     if (!disposed && !completed) playIntro()
   } catch {
-    complete()
+    if (!disposed && !completed) loadError.value = true
+  } finally {
+    loadingAssets = false
   }
+}
+
+onMounted(() => {
+  lockScroll()
+  motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
+  motionPreference.addEventListener('change', handleMotionPreference)
+  prepareLens()
+  void startWhenReady()
 })
 
 onUnmounted(() => {
   disposed = true
-  clearTimeout(readinessTimeout)
   clearTimeout(minimumTimeout)
   context?.revert()
   restoreScroll?.()
@@ -252,6 +241,10 @@ onUnmounted(() => {
       >
         <img :src="layer.src" alt="" decoding="sync" draggable="false" />
       </div>
+      </div>
+      <div v-if="loadError" class="intro-error">
+        <p>Some images couldn’t load.</p>
+        <button type="button" @click="startWhenReady">Try again</button>
       </div>
     </div>
 
@@ -306,6 +299,10 @@ onUnmounted(() => {
 }
 
 .intro-placeholder.is-loaded::after { animation: none; opacity: 0; }
+
+.intro-error { position: absolute; top: calc(50% + var(--intro-square) / 2 + 24px); text-align: center; color: #62636a; font-size: 15px; }
+.intro-error button { margin-top: 12px; padding: 8px 18px; border: 1px solid #d5d5d5; border-radius: 6px; background: #fff; color: #22262f; font: inherit; cursor: pointer; }
+.intro-error button:focus-visible { outline: 2px solid #7a6bdf; outline-offset: 4px; }
 
 .intro-layer {
   grid-area: 1 / 1;
