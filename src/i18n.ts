@@ -15,6 +15,14 @@ const en = {
   skipToContent: 'Skip to content',
   downloadButton: 'Download for Windows',
   githubButton: 'View on GitHub',
+  navigation: {
+    label: 'Main navigation',
+    home: 'Rove homepage',
+    features: 'Features',
+    changelogs: 'Changelogs',
+    questions: 'Q&A',
+    download: 'Download',
+  },
   hero: {
     title: ['Light by Design.', 'Fast by Nature.'],
     description: 'A Windows browser built with Rust. Free and open-source',
@@ -89,6 +97,14 @@ const translations = {
     skipToContent: '跳转到正文',
     downloadButton: '下载 Windows 版',
     githubButton: '在 GitHub 上查看',
+    navigation: {
+      label: '主导航',
+      home: 'Rove 首页',
+      features: '功能',
+      changelogs: '更新日志',
+      questions: '常见问题',
+      download: '下载',
+    },
     hero: {
       title: ['轻盈设计。', '天生迅捷。'],
       description: '基于 Rust 构建的 Windows 浏览器，免费且开源。',

@@ -6,6 +6,7 @@ import DownloadPage from './components/DownloadPage.vue'
 import FeatureCard from './components/FeatureCard.vue'
 import LoadingIntro from './components/LoadingIntro.vue'
 import ScrollRevealText from './components/ScrollRevealText.vue'
+import SiteNavbar from './components/SiteNavbar.vue'
 import { useSmoothScroll } from './composables/useSmoothScroll'
 import { useI18n } from './i18n'
 import roveLogo from '../rove.svg'
@@ -93,14 +94,14 @@ const features = computed(() => [
   <LoadingIntro :images="introPhotos" :preload="[tabManagement, splitView, peek, banner, ctaBackground]" @complete="introComplete = true">
   <Transition name="page-fade" mode="out-in" @enter="preparePage" @after-enter="finishPage">
   <DownloadPage v-if="isDownloadPage" key="download" :download-url="downloadUrl" :repository-url="repositoryUrl" :home-href="homeHref" @home="navigate" />
-  <div v-else key="home">
+  <div v-else id="home" key="home">
   <a class="skip-link" href="#meet-rove">{{ messages.skipToContent }}</a>
+  <SiteNavbar :repository-url="repositoryUrl" @download="navigate" />
 
   <main class="page-shell">
     <section class="hero" aria-labelledby="hero-title">
       <header class="hero-header">
         <div class="hero-copy">
-          <img class="brand-mark" :src="roveLogo" alt="Rove" width="64" height="64" />
           <h1 id="hero-title" tabindex="-1">
             <template v-for="(line, index) in messages.hero.title" :key="index">
               <br v-if="index" />{{ line }}
@@ -135,7 +136,7 @@ const features = computed(() => [
       <ScrollRevealText :lines="messages.introduction.lines" :line-separator="messages.introduction.lineSeparator" :enabled="introComplete" />
     </section>
 
-    <section class="features" :aria-label="messages.featuresLabel">
+    <section id="features" class="features" :aria-label="messages.featuresLabel">
       <FeatureCard v-for="feature in features" :key="feature.image" v-bind="feature" />
     </section>
 
