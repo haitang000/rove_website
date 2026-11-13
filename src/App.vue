@@ -96,7 +96,7 @@ const features = computed(() => [
   <DownloadPage v-if="isDownloadPage" key="download" :download-url="downloadUrl" :repository-url="repositoryUrl" :home-href="homeHref" @home="navigate" />
   <div v-else id="home" key="home">
   <a class="skip-link" href="#meet-rove">{{ messages.skipToContent }}</a>
-  <SiteNavbar :repository-url="repositoryUrl" @download="navigate" />
+  <SiteNavbar :repository-url="repositoryUrl" :enabled="introComplete && !pageTransitioning" @download="navigate" />
 
   <main class="page-shell">
     <section class="hero" aria-labelledby="hero-title">
