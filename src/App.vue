@@ -10,11 +10,12 @@ import SiteNavbar from './components/SiteNavbar.vue'
 import { useSmoothScroll } from './composables/useSmoothScroll'
 import { useI18n } from './i18n'
 import roveLogo from '../rove.svg'
-import banner from '../banner.png'
-import tabManagement from '../tab_management.png'
-import splitView from '../split.png'
-import peek from '../peek.png'
-import ctaBackground from '../cta_bg.png'
+import banner from './assets/optimized/banner.webp'
+import bannerSmall from './assets/optimized/banner-720.webp'
+import tabManagement from './assets/optimized/tab_management.webp'
+import splitView from './assets/optimized/split.webp'
+import peek from './assets/optimized/peek.webp'
+import ctaBackground from './assets/optimized/cta_bg.webp'
 
 const repositoryUrl = 'https://github.com/haitang000/RoveBrowser'
 const previewUrl = `${repositoryUrl}/releases`
@@ -69,7 +70,7 @@ onUnmounted(() => {
   window.removeEventListener('popstate', syncPage)
   window.removeEventListener('hashchange', syncPage)
 })
-const introPhotos = Object.values(import.meta.glob('./assets/intro/*.jpg', {
+const introPhotos = Object.values(import.meta.glob('./assets/optimized/intro/*.webp', {
   eager: true,
   query: '?url',
   import: 'default',
@@ -92,7 +93,7 @@ const features = computed(() => [
 </script>
 
 <template>
-  <LoadingIntro :images="introPhotos" :preload="[tabManagement, splitView, peek, banner, ctaBackground]" @complete="introComplete = true">
+  <LoadingIntro :images="introPhotos" @complete="introComplete = true">
   <Transition name="page-fade" mode="out-in" @enter="preparePage" @after-enter="finishPage">
   <DownloadPage v-if="isDownloadPage" key="download" :preview-url="previewUrl" :canary-url="canaryUrl" :repository-url="repositoryUrl" :home-href="homeHref" @home="navigate" />
   <div v-else id="home" key="home">
@@ -123,11 +124,15 @@ const features = computed(() => [
       <div class="hero-visual">
         <img
           :src="banner"
+          :srcset="`${bannerSmall} 720w, ${banner} 1440w`"
+          sizes="(max-width: 700px) calc(100vw - 40px), (max-width: 1199px) calc(100vw - 64px), (max-width: 1536px) calc(100vw - 96px), 1440px"
           class="browser-preview"
           :alt="messages.hero.imageAlt"
           width="1440"
           height="852"
           fetchpriority="high"
+          decoding="async"
+          data-preload
         />
       </div>
     </section>
@@ -138,7 +143,7 @@ const features = computed(() => [
     </section>
 
     <section id="features" class="features" :aria-label="messages.featuresLabel">
-      <FeatureCard v-for="feature in features" :key="feature.image" v-bind="feature" />
+      <FeatureCard v-for="feature in features" :key="feature.image" v-bind="feature" :enabled="introComplete" />
     </section>
 
     <section class="performance" aria-labelledby="performance-title">
@@ -170,6 +175,7 @@ const features = computed(() => [
     </section>
 
     <section class="download-banner" aria-labelledby="download-title">
+      <img class="download-background" :src="introComplete ? ctaBackground : undefined" alt="" width="1440" height="517" loading="lazy" decoding="async" />
       <div class="download-copy">
         <h2 id="download-title">{{ messages.download.title }}</h2>
         <p>

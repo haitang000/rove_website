@@ -1,21 +1,22 @@
 <script setup lang="ts">
-defineProps<{
+withDefaults(defineProps<{
   image: string
   imageAlt: string
   title: string[]
   description: string
-}>()
+  enabled?: boolean
+}>(), { enabled: true })
 </script>
 
 <template>
   <article class="feature-card">
     <img
       class="feature-image"
-      :src="image"
+      :src="enabled ? image : undefined"
       :alt="imageAlt"
       width="660"
       height="410"
-      loading="eager"
+      loading="lazy"
       decoding="async"
     />
     <div class="feature-copy">

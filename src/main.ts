@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import '@fontsource-variable/outfit'
+import './fonts.css'
 import 'lenis/dist/lenis.css'
 import './style.css'
 import App from './App.vue'

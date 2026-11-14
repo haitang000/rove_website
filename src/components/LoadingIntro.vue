@@ -7,7 +7,7 @@ import { useI18n } from '../i18n'
 
 gsap.registerPlugin(CustomEase)
 
-const props = defineProps<{ images: string[]; preload?: string[] }>()
+const props = defineProps<{ images: string[] }>()
 const emit = defineEmits<{ complete: [] }>()
 const { messages } = useI18n()
 
@@ -38,9 +38,7 @@ let context: gsap.Context | undefined
 let disposed = false
 let completed = false
 let restoreScroll: (() => void) | undefined
-let minimumTimeout: ReturnType<typeof setTimeout> | undefined
 let motionPreference: MediaQueryList | undefined
-let assetsReady = false
 let loadingAssets = false
 
 function lockScroll() {
@@ -104,7 +102,7 @@ function prepareLens() {
 }
 
 function handleMotionPreference() {
-  if (!motionPreference?.matches || !assetsReady) return
+  if (!motionPreference?.matches) return
   context?.revert()
   complete()
 }
@@ -178,12 +176,6 @@ async function startWhenReady() {
   loadingAssets = true
   loadError.value = false
   try {
-    await Promise.all([
-      preloadImages(page.value, [...props.images, ...(props.preload ?? [])]),
-      new Promise<void>((resolve) => { minimumTimeout = setTimeout(resolve, 250) }),
-    ])
-    if (disposed || completed) return
-    assetsReady = true
     if (motionPreference?.matches || !props.images.length) return complete()
 
     const pool = shuffledImages([...new Set(props.images)])
@@ -193,8 +185,15 @@ async function startWhenReady() {
       growth: sizeMultiplier ** (index + 1),
     }))
     await nextTick()
-    // The six visible copies must also be decoded before their first frame.
-    await Promise.all([...root.value!.querySelectorAll<HTMLImageElement>('.intro-layer img')].map((image) => image.decode()))
+    // Select first, then load just the six photos used by this visit. Offscreen
+    // features, backgrounds and fonts must never delay the first screen.
+    await Promise.all([
+      preloadImages(page.value),
+      ...[...root.value!.querySelectorAll<HTMLImageElement>('.intro-layer img')].map(async (image) => {
+        if (image.complete && image.naturalWidth === 0) image.src = image.src
+        await image.decode()
+      }),
+    ])
     if (!disposed && !completed) playIntro()
   } catch {
     if (!disposed && !completed) loadError.value = true
@@ -207,13 +206,13 @@ onMounted(() => {
   lockScroll()
   motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
   motionPreference.addEventListener('change', handleMotionPreference)
+  if (motionPreference.matches) return complete()
   prepareLens()
   void startWhenReady()
 })
 
 onUnmounted(() => {
   disposed = true
-  clearTimeout(minimumTimeout)
   context?.revert()
   restoreScroll?.()
   motionPreference?.removeEventListener('change', handleMotionPreference)

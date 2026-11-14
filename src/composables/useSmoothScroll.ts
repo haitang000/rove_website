@@ -1,17 +1,30 @@
 import { onMounted, onUnmounted, watch, type Ref } from 'vue'
-import Lenis from 'lenis'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import type Lenis from 'lenis'
+import { loadScrollTrigger } from '../utils/scrollAnimations'
 
 export function useSmoothScroll(enabled: Ref<boolean>) {
   let lenis: Lenis | undefined
   let reducedMotion: MediaQueryList | undefined
+  let setupVersion = 0
 
-  function sync() {
+  async function sync() {
+    const version = ++setupVersion
     lenis?.destroy()
     lenis = undefined
     if (!enabled.value || reducedMotion?.matches) return
 
-    lenis = new Lenis({
+    let LenisConstructor: typeof Lenis
+    let ScrollTrigger: Awaited<ReturnType<typeof loadScrollTrigger>>
+    try {
+      const [module, plugin] = await Promise.all([import('lenis'), loadScrollTrigger()])
+      LenisConstructor = module.default
+      ScrollTrigger = plugin
+    } catch {
+      return // Fall back to native scrolling if the optional chunks fail.
+    }
+    if (version !== setupVersion) return
+
+    lenis = new LenisConstructor({
       autoRaf: true,
       lerp: 0.1,
       smoothWheel: true,
@@ -32,6 +45,7 @@ export function useSmoothScroll(enabled: Ref<boolean>) {
   watch(enabled, sync, { flush: 'post' })
 
   onUnmounted(() => {
+    setupVersion++
     lenis?.destroy()
     reducedMotion?.removeEventListener('change', sync)
   })

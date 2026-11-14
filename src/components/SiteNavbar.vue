@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { loadScrollTrigger } from '../utils/scrollAnimations'
 import DownloadButton from './DownloadButton.vue'
 import { useI18n } from '../i18n'
 import roveLogo from '../../rove.svg'
-
-gsap.registerPlugin(ScrollTrigger)
 
 const props = defineProps<{ repositoryUrl: string; enabled: boolean }>()
 defineEmits<{ download: [event: MouseEvent] }>()
@@ -14,10 +12,18 @@ defineEmits<{ download: [event: MouseEvent] }>()
 const { messages } = useI18n()
 const header = ref<HTMLElement | null>(null)
 let media: gsap.MatchMedia | undefined
+let setupVersion = 0
 
-function setupScrollEffects() {
+async function setupScrollEffects() {
+  const version = ++setupVersion
   media?.revert()
   if (!props.enabled || !header.value) return
+  try {
+    await loadScrollTrigger()
+  } catch {
+    return // Navigation remains usable with native scrolling if loading fails.
+  }
+  if (version !== setupVersion || !header.value) return
 
   const element = header.value
   const background = element.querySelector<HTMLElement>('.navbar-background')!
@@ -72,7 +78,10 @@ function setupScrollEffects() {
 
 onMounted(setupScrollEffects)
 watch(() => [props.enabled, messages.value], setupScrollEffects, { flush: 'post' })
-onUnmounted(() => media?.revert())
+onUnmounted(() => {
+  setupVersion++
+  media?.revert()
+})
 </script>
 
 <template>

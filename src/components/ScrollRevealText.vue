@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-gsap.registerPlugin(ScrollTrigger)
+import { loadScrollTrigger } from '../utils/scrollAnimations'
 
 const props = withDefaults(defineProps<{ lines: string[]; enabled: boolean; lineSeparator?: string }>(), {
   lineSeparator: ' ',
@@ -12,10 +10,22 @@ const paragraph = ref<HTMLParagraphElement | null>(null)
 const wordsByLine = computed(() => props.lines.map((line) => line.split(' ')))
 const fullText = computed(() => props.lines.join(props.lineSeparator))
 let media: gsap.MatchMedia | undefined
+let setupVersion = 0
 
-function setupReveal() {
+async function setupReveal() {
+  const version = ++setupVersion
   media?.revert()
   if (!props.enabled || !paragraph.value) return
+  let ScrollTrigger: Awaited<ReturnType<typeof loadScrollTrigger>>
+  try {
+    ScrollTrigger = await loadScrollTrigger()
+  } catch {
+    if (version === setupVersion) {
+      paragraph.value?.querySelectorAll('.reveal-character').forEach(character => character.classList.add('is-read'))
+    }
+    return
+  }
+  if (version !== setupVersion || !paragraph.value) return
 
   const element = paragraph.value
   const characters = [...element.querySelectorAll<HTMLElement>('.reveal-character')]
@@ -54,7 +64,10 @@ function setupReveal() {
 
 onMounted(setupReveal)
 watch(() => [props.enabled, props.lines], setupReveal, { flush: 'post' })
-onUnmounted(() => media?.revert())
+onUnmounted(() => {
+  setupVersion++
+  media?.revert()
+})
 </script>
 
 <template>
