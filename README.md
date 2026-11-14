@@ -30,6 +30,4 @@ npm run preview
 
 首页导航栏、首屏及底部的下载按钮会先淡出首页，再淡入 `#download` 下载须知页；此地址可直接打开或刷新，支持浏览器前进、后退，返回首页时恢复原来的滚动位置。点击须知页的 Rove 标志也可返回首页。系统开启减少动态效果时直接切换页面。须知文案和页面元数据复用原有语言判断逻辑，集中维护在 `src/i18n.ts`。
 
-下载须知页的确认按钮当前跳转至 RoveBrowser 的最新 GitHub Release，GitHub 按钮跳转至源码仓库；链接集中配置在 `src/App.vue`。没有提供安装包时，不使用虚构的下载地址。
-
-未登录状态访问该仓库和最新 Release 返回 404，可能需要仓库访问权限。正式上线前，可在 `src/App.vue` 中将 `downloadUrl` 替换为公开安装包或发布页地址。
+下载须知页提供 Preview 和 Canary 两个版本选项，默认选中 Preview；支持鼠标、触摸及键盘方向键切换。点击下载按钮时，Preview 跳转至 RoveBrowser 的 GitHub Releases 页面，Canary 跳转至 `https://hub.haitang000.cn/haitang000/RoveBrowser/-/pipelines`；GitHub 按钮始终跳转至源码仓库。链接集中配置在 `src/App.vue`，版本说明、不稳定标记及按钮文案集中维护在 `src/i18n.ts`，随页面语言同步切换。

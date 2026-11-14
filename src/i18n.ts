@@ -76,7 +76,19 @@ const en = {
       "Rove is still in the early stages of development, and we don't recommend anyone use it as their primary browser.",
       'Rove is only available for Windows 10 and later versions, and it relies on WebView2 to function properly.',
     ],
-    confirmButton: 'I got it, downloading now',
+    versionLabel: 'Choose a version',
+    channels: {
+      preview: {
+        name: 'Preview',
+        description: 'Get the latest Preview build, more stable than Canary.',
+      },
+      canary: {
+        name: 'Canary',
+        description: 'Built from the latest commits. Try new changes first, but expect instability.',
+      },
+    },
+    unstableLabel: 'Unstable',
+    confirmButton: 'Download',
     actionsLabel: 'Download Rove or view the source code',
     backHome: 'Back to the Rove homepage',
   },
@@ -158,7 +170,19 @@ const translations = {
         'Rove 仍处于早期开发阶段，我们暂不建议将它作为主力浏览器使用。',
         'Rove 仅支持 Windows 10 及以上版本，并依赖 WebView2 才能正常运行。',
       ],
-      confirmButton: '我已了解，立即下载',
+      versionLabel: '选择下载版本',
+      channels: {
+        preview: {
+          name: 'Preview',
+          description: '获取最新的 Preview 构建，相比 Canary 更加稳定。',
+        },
+        canary: {
+          name: 'Canary',
+          description: '基于最新提交构建，抢先体验新更改，但可能不稳定。',
+        },
+      },
+      unstableLabel: '不稳定',
+      confirmButton: '下载',
       actionsLabel: '下载 Rove 或查看源代码',
       backHome: '返回 Rove 首页',
     },

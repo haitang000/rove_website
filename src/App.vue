@@ -17,7 +17,8 @@ import peek from '../peek.png'
 import ctaBackground from '../cta_bg.png'
 
 const repositoryUrl = 'https://github.com/haitang000/RoveBrowser'
-const downloadUrl = `${repositoryUrl}/releases/latest`
+const previewUrl = `${repositoryUrl}/releases`
+const canaryUrl = 'https://hub.haitang000.cn/haitang000/RoveBrowser/-/pipelines'
 const introComplete = ref(false)
 const isDownloadPage = ref(window.location.hash === '#download')
 const pageTransitioning = ref(false)
@@ -93,7 +94,7 @@ const features = computed(() => [
 <template>
   <LoadingIntro :images="introPhotos" :preload="[tabManagement, splitView, peek, banner, ctaBackground]" @complete="introComplete = true">
   <Transition name="page-fade" mode="out-in" @enter="preparePage" @after-enter="finishPage">
-  <DownloadPage v-if="isDownloadPage" key="download" :download-url="downloadUrl" :repository-url="repositoryUrl" :home-href="homeHref" @home="navigate" />
+  <DownloadPage v-if="isDownloadPage" key="download" :preview-url="previewUrl" :canary-url="canaryUrl" :repository-url="repositoryUrl" :home-href="homeHref" @home="navigate" />
   <div v-else id="home" key="home">
   <a class="skip-link" href="#meet-rove">{{ messages.skipToContent }}</a>
   <SiteNavbar :repository-url="repositoryUrl" :enabled="introComplete && !pageTransitioning" @download="navigate" />
