@@ -19,7 +19,7 @@ const en = {
     label: 'Main navigation',
     home: 'Rove homepage',
     features: 'Features',
-    changelogs: 'Changelogs',
+    changelogs: 'Changelog',
     questions: 'Q&A',
     download: 'Download',
   },
@@ -65,6 +65,26 @@ const en = {
   download: {
     title: 'Go Further. Browse Lighter.',
     description: 'Experience a lighter, faster way to explore the web. Built with Rust, made for\nWindows, and free for everyone.',
+  },
+  changelogPage: {
+    meta: {
+      title: 'Changelog — Rove',
+      description: 'Follow new features, fixes, and development in Rove, sourced from the browser’s GitHub commit history.',
+    },
+    title: 'Changelog',
+    description: 'New features, fixes, and ongoing work on Rove for Windows.',
+    githubHistory: 'Commit history',
+    archive: 'Archive',
+    month: 'Browse by month',
+    filter: 'Filter by commit type',
+    kinds: { all: 'All', feat: 'Features', fix: 'Fixes', other: 'Other' },
+    badges: { feat: 'Feature', fix: 'Fix', other: 'Other' },
+    syncing: 'Checking GitHub for updates…',
+    snapshot: 'Showing a saved copy of the GitHub history.',
+    error: 'Couldn’t load the GitHub history.',
+    retry: 'Try again',
+    empty: 'No commits match this view.',
+    more: 'Show more commits',
   },
   downloadPage: {
     meta: {
@@ -159,6 +179,26 @@ const translations = {
     download: {
       title: '探索更远，浏览更轻。',
       description: '以更轻盈、更迅捷的方式探索网络。基于 Rust 构建，专为 Windows 打造，向所有人免费开放。',
+    },
+    changelogPage: {
+      meta: {
+        title: '更新日志 — Rove',
+        description: '从 GitHub 提交记录了解 Windows 版 Rove 的新功能、修复和开发进展。',
+      },
+      title: '更新日志',
+      description: '了解 Windows 版 Rove 的新功能、修复和开发进展。',
+      githubHistory: 'GitHub 提交记录',
+      archive: '归档',
+      month: '按月浏览',
+      filter: '按提交类型筛选',
+      kinds: { all: '全部', feat: '功能', fix: '修复', other: '其他' },
+      badges: { feat: '功能', fix: '修复', other: '其他' },
+      syncing: '正在从 GitHub 检查更新…',
+      snapshot: '正在显示已保存的 GitHub 提交记录。',
+      error: '暂时无法加载 GitHub 提交记录。',
+      retry: '重试',
+      empty: '当前筛选下没有提交。',
+      more: '显示更多提交',
     },
     downloadPage: {
       meta: {

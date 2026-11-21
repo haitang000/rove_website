@@ -206,7 +206,7 @@ onMounted(() => {
   lockScroll()
   motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
   motionPreference.addEventListener('change', handleMotionPreference)
-  if (motionPreference.matches) return complete()
+  if (motionPreference.matches || !props.images.length) return complete()
   prepareLens()
   void startWhenReady()
 })

@@ -3,12 +3,14 @@ import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { RiGithubFill, RiChromeFill } from '@remixicon/vue'
 import DownloadButton from './components/DownloadButton.vue'
 import DownloadPage from './components/DownloadPage.vue'
+import ChangelogPage from './components/ChangelogPage.vue'
 import FeatureCard from './components/FeatureCard.vue'
 import LoadingIntro from './components/LoadingIntro.vue'
 import ScrollRevealText from './components/ScrollRevealText.vue'
 import SiteNavbar from './components/SiteNavbar.vue'
 import { useSmoothScroll } from './composables/useSmoothScroll'
 import { useI18n } from './i18n'
+import { repositoryUrl } from './roveRepository'
 import roveLogo from '../rove.svg'
 import banner from './assets/optimized/banner.webp'
 import bannerSmall from './assets/optimized/banner-720.webp'
@@ -17,48 +19,76 @@ import splitView from './assets/optimized/split.webp'
 import peek from './assets/optimized/peek.webp'
 import ctaBackground from './assets/optimized/cta_bg.webp'
 
-const repositoryUrl = 'https://github.com/haitang000/RoveBrowser'
 const previewUrl = `${repositoryUrl}/releases`
 const canaryUrl = 'https://hub.haitang000.cn/haitang000/RoveBrowser/-/pipelines'
+type Page = 'home' | 'download' | 'changelog'
 const introComplete = ref(false)
-const isDownloadPage = ref(window.location.hash === '#download')
+const page = ref(readPage())
 const pageTransitioning = ref(false)
-const homeHref = ref(`${window.location.pathname}${window.location.search}${isDownloadPage.value ? '' : window.location.hash}`)
+const baseHref = `${window.location.pathname}${window.location.search}`
+const homeHref = ref(`${baseHref}${page.value === 'home' ? window.location.hash : ''}`)
 let homeScrollY = 0
-const smoothScrollEnabled = computed(() => introComplete.value && !isDownloadPage.value && !pageTransitioning.value)
+let navigateToFeatures = false
+const smoothScrollEnabled = computed(() => introComplete.value && page.value === 'home' && !pageTransitioning.value)
 const { messages } = useI18n()
 useSmoothScroll(smoothScrollEnabled)
 
+function readPage(): Page {
+  if (window.location.hash === '#download') return 'download'
+  if (window.location.hash === '#changelog') return 'changelog'
+  return 'home'
+}
+
 watchEffect(() => {
-  const meta = isDownloadPage.value ? messages.value.downloadPage.meta : messages.value.meta
+  const meta = {
+    home: messages.value.meta,
+    download: messages.value.downloadPage.meta,
+    changelog: messages.value.changelogPage.meta,
+  }[page.value]
   document.title = meta.title
   document.querySelector('meta[name="description"]')?.setAttribute('content', meta.description)
 })
 
 function syncPage() {
-  const nextIsDownload = window.location.hash === '#download'
-  if (!nextIsDownload) homeHref.value = `${window.location.pathname}${window.location.search}${window.location.hash}`
-  if (nextIsDownload === isDownloadPage.value) return
-  if (!isDownloadPage.value) homeScrollY = window.scrollY
+  const nextPage = readPage()
+  if (nextPage === 'home') homeHref.value = `${baseHref}${window.location.hash}`
+  if (nextPage === page.value) return
+  if (page.value === 'home') homeScrollY = window.scrollY
   pageTransitioning.value = true
-  isDownloadPage.value = nextIsDownload
+  page.value = nextPage
 }
 
 function navigate(event: MouseEvent) {
   if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
   event.preventDefault()
   const link = event.currentTarget as HTMLAnchorElement
+  if (link.href === window.location.href) return
+  navigateToFeatures = link.getAttribute('href') === '#features'
   window.history.pushState(null, '', link.href)
   syncPage()
 }
 
 function preparePage() {
-  window.scrollTo({ top: isDownloadPage.value ? 0 : homeScrollY, behavior: 'instant' })
+  if (page.value === 'home' && navigateToFeatures) {
+    document.getElementById('features')?.scrollIntoView({ behavior: 'instant' })
+    return
+  }
+  window.scrollTo({ top: page.value === 'home' ? homeScrollY : 0, behavior: 'instant' })
 }
 
 function finishPage() {
   pageTransitioning.value = false
-  document.getElementById(isDownloadPage.value ? 'download-page-title' : 'hero-title')?.focus({ preventScroll: true })
+  const titleId = {
+    home: navigateToFeatures ? 'features' : 'hero-title',
+    download: 'download-page-title',
+    changelog: 'changelog-page-title',
+  }[page.value]
+  navigateToFeatures = false
+  document.getElementById(titleId)?.focus({ preventScroll: true })
+}
+
+function focusChangelogTitle() {
+  document.getElementById('changelog-page-title')?.focus()
 }
 
 onMounted(() => {
@@ -70,11 +100,12 @@ onUnmounted(() => {
   window.removeEventListener('popstate', syncPage)
   window.removeEventListener('hashchange', syncPage)
 })
-const introPhotos = Object.values(import.meta.glob('./assets/optimized/intro/*.webp', {
+const availableIntroPhotos = Object.values(import.meta.glob('./assets/optimized/intro/*.webp', {
   eager: true,
   query: '?url',
   import: 'default',
 })) as string[]
+const introPhotos = page.value === 'changelog' ? [] : availableIntroPhotos
 
 const features = computed(() => [
   {
@@ -95,10 +126,15 @@ const features = computed(() => [
 <template>
   <LoadingIntro :images="introPhotos" @complete="introComplete = true">
   <Transition name="page-fade" mode="out-in" @enter="preparePage" @after-enter="finishPage">
-  <DownloadPage v-if="isDownloadPage" key="download" :preview-url="previewUrl" :canary-url="canaryUrl" :repository-url="repositoryUrl" :home-href="homeHref" @home="navigate" />
+  <DownloadPage v-if="page === 'download'" key="download" :preview-url="previewUrl" :canary-url="canaryUrl" :repository-url="repositoryUrl" :home-href="homeHref" @home="navigate" />
+  <div v-else-if="page === 'changelog'" key="changelog">
+    <a class="skip-link" href="#changelog-page-title" @click.prevent="focusChangelogTitle">{{ messages.skipToContent }}</a>
+    <SiteNavbar :repository-url="repositoryUrl" :enabled="false" :home-href="homeHref" changelog @navigate="navigate" />
+    <ChangelogPage />
+  </div>
   <div v-else id="home" key="home">
   <a class="skip-link" href="#meet-rove">{{ messages.skipToContent }}</a>
-  <SiteNavbar :repository-url="repositoryUrl" :enabled="introComplete && !pageTransitioning" @download="navigate" />
+  <SiteNavbar :repository-url="repositoryUrl" :enabled="introComplete && !pageTransitioning" @navigate="navigate" />
 
   <main class="page-shell">
     <section class="hero" aria-labelledby="hero-title">
@@ -142,7 +178,7 @@ const features = computed(() => [
       <ScrollRevealText :lines="messages.introduction.lines" :line-separator="messages.introduction.lineSeparator" :enabled="introComplete" />
     </section>
 
-    <section id="features" class="features" :aria-label="messages.featuresLabel">
+    <section id="features" class="features" tabindex="-1" :aria-label="messages.featuresLabel">
       <FeatureCard v-for="feature in features" :key="feature.image" v-bind="feature" :enabled="introComplete" />
     </section>
 

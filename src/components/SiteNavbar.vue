@@ -6,8 +6,8 @@ import DownloadButton from './DownloadButton.vue'
 import { useI18n } from '../i18n'
 import roveLogo from '../../rove.svg'
 
-const props = defineProps<{ repositoryUrl: string; enabled: boolean }>()
-defineEmits<{ download: [event: MouseEvent] }>()
+const props = defineProps<{ repositoryUrl: string; enabled: boolean; changelog?: boolean; homeHref?: string }>()
+defineEmits<{ navigate: [event: MouseEvent] }>()
 
 const { messages } = useI18n()
 const header = ref<HTMLElement | null>(null)
@@ -85,23 +85,23 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <header ref="header" class="site-header">
+  <header ref="header" class="site-header" :class="{ 'site-header--changelog': changelog }">
     <div class="navbar-background" aria-hidden="true"></div>
     <nav class="site-navbar" :aria-label="messages.navigation.label">
-      <a class="navbar-brand" href="#home" :aria-label="messages.navigation.home">
+      <a class="navbar-brand" :href="homeHref ?? '#home'" :aria-label="messages.navigation.home" @click="changelog && $emit('navigate', $event)">
         <img :src="roveLogo" alt="" width="40" height="40" />
         <span>Rove</span>
       </a>
 
       <ul class="navbar-links">
-        <li><a href="#features">{{ messages.navigation.features }}</a></li>
-        <li><a :href="`${repositoryUrl}/releases`" target="_blank" rel="noopener noreferrer">{{ messages.navigation.changelogs }}</a></li>
+        <li><a href="#features" @click="changelog && $emit('navigate', $event)">{{ messages.navigation.features }}</a></li>
+        <li><a href="#changelog" :aria-current="changelog ? 'page' : undefined" @click="$emit('navigate', $event)">{{ messages.navigation.changelogs }}</a></li>
         <li><a :href="`${repositoryUrl}/issues`" target="_blank" rel="noopener noreferrer">{{ messages.navigation.questions }}</a></li>
         <li><a :href="repositoryUrl" target="_blank" rel="noopener noreferrer">GitHub</a></li>
       </ul>
 
       <div class="navbar-download-slot">
-        <DownloadButton class="navbar-download" href="#download" :label="messages.navigation.download" @click="$emit('download', $event)" />
+        <DownloadButton class="navbar-download" href="#download" :label="messages.navigation.download" @click="$emit('navigate', $event)" />
       </div>
     </nav>
   </header>
@@ -125,6 +125,7 @@ onUnmounted(() => {
   opacity: 0;
   pointer-events: none;
 }
+.site-header--changelog .navbar-background { opacity: 1; }
 .site-navbar {
   display: flex;
   align-items: center;
@@ -157,7 +158,8 @@ onUnmounted(() => {
   text-decoration: none;
   white-space: nowrap;
 }
-.navbar-links a:focus-visible { color: #22262f; }
+.navbar-links a:focus-visible, .navbar-links a[aria-current] { color: #22262f; }
+.navbar-links a[aria-current] { text-decoration: underline; text-underline-offset: .33em; text-decoration-color: #6b64df; }
 .navbar-download-slot { flex-shrink: 0; }
 .navbar-download { min-height: 52px; padding: 9px 14px; border-radius: 12px; font-size: 24px; }
 .navbar-download:active { transform: scale(.97); }
